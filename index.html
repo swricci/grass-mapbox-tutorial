@@ -29,6 +29,16 @@ var map = new mapboxgl.Map({
 //Add Navigation Controls
 map.addControl(new mapboxgl.NavigationControl());
 
+//The total numbers of images found in data_file.js 
+var frameCount = layerInfos.length;
+//Default used to start animation with first image
+var currentImage = 0;
+
+//Gets the current image
+function getPath() {
+    return "images/" + layerInfos[currentImage].file;
+}
+
 //Convert Bounds to match mapbox gl source specs
 function grassBbox(bounds) {
     return [
@@ -38,15 +48,15 @@ function grassBbox(bounds) {
         [bounds[1][1], bounds[0][0]]
     ];
 }
-
+ 
 //We need to wait for the map to load before we add the raster layer
 map.on('load', function() {
  
     //Create a new map source with the bounding box and url to your raster data.
     map.addSource("grass", {
         type: "image",
-        //Gets the first image listed in images/data_file.js
-        url: "./images/" + layerInfos[0].file, 
+        //Replace static file with function
+        url: getPath(), 
         //Gets the bounds of the first image listed in images/data_file.js
         coordinates: grassBbox(layerInfos[0].bounds)
     });
@@ -60,9 +70,14 @@ map.on('load', function() {
             "raster-fade-duration": 0
         }
     });
+
+    //Will update image every 200ms
+    setInterval(function() {
+        currentImage = (currentImage + 1) % frameCount;
+        map.getSource("grass").updateImage({ url: getPath() });
+    }, 200);
  
 });
-
 </script>
 
 </body>
